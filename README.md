@@ -13,7 +13,7 @@ A [GitHub CLI](https://github.com/cli/cli) extension to move a project item to a
 **Prerequisite:**
 
 - Install the [GitHub CLI](https://github.com/cli/cli).
-- Make sure that you have read:project permissions
+- Make sure that you have project permissions
 
 ```bash
 gh auth refresh -s project
