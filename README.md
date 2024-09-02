@@ -43,7 +43,7 @@ The extension adds a `project-item-move` command to the GitHub CLI.
 
 ```bash
 gh-project-item-move
-Copyright (C) 2024 maxdecor - Design Solutions
+Copyright (C) 2024 Daniel Leinweber
 USAGE:
 Move issue with ID '123' to the 'Done' column of the project 'MyProject':
   gh project-item-move --column Done --issue 123 --owner daniel-leinweber --project MyProject
