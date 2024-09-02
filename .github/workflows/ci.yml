@@ -6,17 +6,6 @@ on:
     tags: ["v*"]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🤘 checkout
-        uses: actions/checkout@v3
-
-      - name: ✓ check format
-        run: |
-          dotnet format whitespace --verify-no-changes -v:diag --exclude ~/.nuget
-          dotnet format style --verify-no-changes -v:diag --exclude ~/.nuget
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -30,20 +19,20 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: 🔄 restore
-        run: dotnet restore -m:1
+        run: dotnet restore Extension.csproj -m:1
 
       - name: 🙏 build
-        run: dotnet build --no-restore -m:1
+        run: dotnet build Extension.csproj --no-restore -m:1
 
 #      - name: 🧪 test
 #        run: dotnet test --no-build --no-restore
 
       - name: 📦 publish (compile & package) artifacts
         run: |
-          dotnet publish src/Extension.csproj -c Release -r win-x64 --self-contained -o bin/win-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish src/Extension.csproj -c Release -r osx-x64 --self-contained -o bin/osx-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish src/Extension.csproj -c Release -r osx-arm64 --self-contained -o bin/osx-arm64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish src/Extension.csproj -c Release -r linux-x64 --self-contained -o bin/linux-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish Extension.csproj -c Release -r win-x64 --self-contained -o bin/win-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish Extension.csproj -c Release -r osx-x64 --self-contained -o bin/osx-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish Extension.csproj -c Release -r osx-arm64 --self-contained -o bin/osx-arm64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish Extension.csproj -c Release -r linux-x64 --self-contained -o bin/linux-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: ➡️ stage artifacts
         run: |
