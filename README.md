@@ -1,12 +1,12 @@
 # GitHub CLI Project Item Extension
 
+A [GitHub CLI](https://github.com/cli/cli) extension to move a project item to a specified Kanban column.
+
 <!--toc:start-->
 - [GitHub CLI Project Item Extension](#github-cli-project-item-extension)
   - [Installation](#installation)
   - [Usage](#usage)
 <!--toc:end-->
-
-A [GitHub CLI](https://github.com/cli/cli) extension to move a project item to a specified Kanban column.
 
 ## Installation
 
