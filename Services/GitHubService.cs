@@ -105,7 +105,7 @@ internal class GitHubService
 
             var shellOutput = RunShellCommand(
                 $$"""
-                project list --owner {{owner}} --format json --jq .[] | select(.title == "{{projectName}}") | {id: .id, number: .number, title: .title}
+                project list --owner {{owner}} --limit 1000 --format json --jq .[] | select(.title == "{{projectName}}") | {id: .id, number: .number, title: .title}
                 """
             );
             shellOutput = shellOutput.Substring(0, shellOutput.LastIndexOf("]") + 1);
@@ -135,7 +135,7 @@ internal class GitHubService
 
             var shellOutput = RunShellCommand(
                 $$"""
-                project item-list {{project.Number}} --owner {{owner}} --format json --jq .[]
+                project item-list {{project.Number}} --owner {{owner}} --limit 1000 --format json --jq .[]
                 """
             );
             shellOutput = shellOutput.Substring(0, shellOutput.LastIndexOf("]") + 1);
