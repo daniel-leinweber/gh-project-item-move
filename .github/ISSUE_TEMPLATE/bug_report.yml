@@ -1,0 +1,67 @@
+name: Bug report
+description: Create a report to help us improve
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before** reporting an issue, make sure to read the [documentation](https://github.com/daniel-leinweber/gh-project-item-move)
+        and search [existing issues](https://github.com/daniel-leinweber/gh-project-item-move/issues).
+
+        Usage questions such as ***"How do I...?"*** belong in [Discussions](https://github.com/daniel-leinweber/gh-project-item-move/discussions) and will be closed.
+  - type: checkboxes
+    attributes:
+      label: Did you check docs and existing issues?
+      description: Make sure you checked all of the below before submitting an issue!
+      options:
+        - label: I have read all the docs
+          required: true
+        - label: I have updated to the latest version before submitting this issue
+          required: true
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is. Please include any related errors you see.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Provide '...' for parameter '...'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        examples:
+          - **OS**: Win11
+          - **Version**: 1.0.0
+      value: |
+        - **OS**:
+        - **Version**:
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: |
+        Add any other information about the problem here.
+        Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+    validations:
+      required: false
