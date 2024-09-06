@@ -95,9 +95,59 @@ internal class GitHubService
         return CurrentUser;
     }
 
-    internal Project? GetProject(string projectName, string? owner = null)
+    internal IEnumerable<string> GetOwners()
     {
-        Project? output = null;
+        var output = new List<string>();
+
+        try
+        {
+            var currentUser = GetCurrentUser();
+            if (currentUser is not null)
+            {
+                output.Add(currentUser);
+            }
+
+            var organizations = GetOrganizations();
+            foreach (var organization in organizations)
+            {
+                output.Add(organization);
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine(
+                "Could not determine possible owners, please make sure to authenticate with the gh CLI or provide the '--owner' option!"
+            );
+            Environment.Exit(1);
+        }
+
+        return output;
+    }
+
+    private IEnumerable<string> GetOrganizations()
+    {
+        var output = new List<string>();
+
+        var shellOutput = RunShellCommand("org list");
+        if (string.IsNullOrWhiteSpace(shellOutput) == false)
+        {
+            var lines = shellOutput.Split(
+                Environment.NewLine,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+            );
+
+            foreach (var line in lines)
+            {
+                output.Add(line);
+            }
+        }
+
+        return output;
+    }
+
+    internal List<Project> GetProjects(string? owner = null)
+    {
+        var output = new List<Project>();
 
         try
         {
@@ -105,19 +155,26 @@ internal class GitHubService
 
             var shellOutput = RunShellCommand(
                 $$"""
-                project list --owner {{owner}} --limit 1000 --format json --jq .[] | select(.title == "{{projectName}}") | {id: .id, number: .number, title: .title}
+                project list --owner {{owner}} --limit 1000 --format json
                 """
             );
+            shellOutput = shellOutput.Substring(shellOutput.IndexOf("["));
             shellOutput = shellOutput.Substring(0, shellOutput.LastIndexOf("]") + 1);
 
             var projects = JsonConvert.DeserializeObject<List<Project>>(shellOutput);
-            output = projects?.FirstOrDefault(x =>
-                x.Title.Equals(projectName, StringComparison.InvariantCultureIgnoreCase)
-            );
+
+            if (projects is not null && projects.Any())
+            {
+                foreach (var project in projects)
+                {
+                    project.Owner = owner!;
+                }
+                output = projects;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Could not find project with name \"{projectName}\".");
+            Console.WriteLine($"Could not find projects for owner \"{owner}\".");
             Console.WriteLine(ex.Message);
             Environment.Exit(1);
         }
@@ -125,14 +182,12 @@ internal class GitHubService
         return output;
     }
 
-    internal ProjectItem? GetIssue(Project project, int issueNumber, string? owner = null)
+    internal List<ProjectItem> GetIssues(Project project, string owner)
     {
-        ProjectItem? output = null;
+        var output = new List<ProjectItem>();
 
         try
         {
-            owner ??= GetCurrentUser();
-
             var shellOutput = RunShellCommand(
                 $$"""
                 project item-list {{project.Number}} --owner {{owner}} --limit 1000 --format json --jq .[]
@@ -140,17 +195,18 @@ internal class GitHubService
             );
             shellOutput = shellOutput.Substring(0, shellOutput.LastIndexOf("]") + 1);
 
-            var projectItems = JsonConvert.DeserializeObject<List<ProjectItem>>(shellOutput);
-            output = projectItems?.FirstOrDefault(x => x.Content.Number == issueNumber);
+            output = JsonConvert.DeserializeObject<List<ProjectItem>>(shellOutput);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Could not find issue with number \"{issueNumber}\"");
+            Console.WriteLine(
+                $"Could not find issues for project \"{project.Title}\" of owner \"{owner}\""
+            );
             Console.WriteLine(ex.Message);
             Environment.Exit(1);
         }
 
-        return output;
+        return output ?? new();
     }
 
     internal ProjectField? GetProjectField(
