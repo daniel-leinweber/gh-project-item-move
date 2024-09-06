@@ -3,9 +3,8 @@
 A [GitHub CLI](https://github.com/cli/cli) extension to move a project item to a specified Kanban column.
 
 <!--toc:start-->
-- [GitHub CLI Project Item Extension](#github-cli-project-item-extension)
-  - [Installation](#installation)
-  - [Usage](#usage)
+- [Installation](#installation)
+- [Usage](#usage)
 <!--toc:end-->
 
 ## Installation
@@ -45,16 +44,18 @@ The extension adds a `project-item-move` command to the GitHub CLI.
 gh-project-item-move
 Copyright (C) 2024 Daniel Leinweber
 USAGE:
+Move issue interactively
+  gh project-item-move
 Move issue with ID '123' to the 'Done' column of the project 'MyProject':
   gh project-item-move --column Done --issue 123 --owner daniel-leinweber --project MyProject
 
   -o, --owner      Owner of the project (optional)
 
-  -p, --project    Required. Name of the Project
+  -p, --project    Name of the Project (optional)
 
-  -i, --issue      Required. ID of the issue to move
+  -i, --issue      ID of the issue to move (optional)
 
-  -c, --column     Required. Column Name to move the issue to
+  -c, --column     Column Name to move the issue to (optional)
 
   --help           Display this help screen.
 
