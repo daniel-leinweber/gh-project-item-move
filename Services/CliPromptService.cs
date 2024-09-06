@@ -6,14 +6,17 @@ internal class CliPromptService
         string? description = null
     )
     {
-        var cursorPosition = Console.CursorTop;
+        var menuHeight = options.Length + 1;
+        var menuStartRow = Console.CursorTop;
+
         var selectedIndex = 0;
         while (true)
         {
+            menuStartRow = GetMenuStartRow(menuStartRow, menuHeight);
             description ??= "Use arrows or j/k to move";
 
             // Reset cursor to initial position and print the menu
-            Console.SetCursorPosition(0, cursorPosition);
+            Console.SetCursorPosition(0, menuStartRow);
             Console.Write(title);
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($" [{description}]");
@@ -69,15 +72,18 @@ internal class CliPromptService
         string? description = null
     )
     {
-        var cursorPosition = Console.CursorTop;
+        var menuHeight = options.Length + 1;
+        var menuStartRow = Console.CursorTop;
+
         var selectedIndexes = new List<int>();
         var cursorIndex = 0;
         while (true)
         {
+            menuStartRow = GetMenuStartRow(menuStartRow, menuHeight);
             description ??= "Use arrows or j/k to move and space to select"; // , type / to filter";
 
             // Reset cursor to initial position and print the menu
-            Console.SetCursorPosition(0, cursorPosition);
+            Console.SetCursorPosition(0, menuStartRow);
             Console.Write(title);
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($" [{description}]");
@@ -151,5 +157,28 @@ internal class CliPromptService
                 return output.ToArray();
             }
         }
+    }
+
+    private int GetMenuStartRow(int menuStartRow, int menuHeight)
+    {
+        int currentRow = Console.CursorTop;
+
+        // If the menu start position + height is beyond the window, scroll up by printing empty lines
+        if (menuStartRow + menuHeight >= Console.WindowHeight)
+        {
+            // Calculate how many lines we need to move up
+            int scrollLines = (menuStartRow + menuHeight) - Console.WindowHeight + 1;
+
+            // Scroll up by printing blank lines
+            for (int i = 0; i < scrollLines; i++)
+            {
+                Console.WriteLine();
+            }
+
+            // Adjust the menu start row accordingly
+            menuStartRow -= scrollLines;
+        }
+
+        return menuStartRow;
     }
 }
