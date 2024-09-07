@@ -194,13 +194,13 @@ internal class CliPromptService
                     cursorIndex--;
                     if (cursorIndex < 0)
                     {
-                        cursorIndex = options.Length - 1;
+                        cursorIndex = filteredOptions.Count() - 1;
                     }
                 }
                 else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.J)
                 {
                     cursorIndex++;
-                    if (cursorIndex >= options.Length)
+                    if (cursorIndex >= filteredOptions.Count())
                     {
                         cursorIndex = 0;
                     }
@@ -222,7 +222,7 @@ internal class CliPromptService
                     var output = new List<string>();
                     foreach (var index in selectedIndexes)
                     {
-                        output.Add(options[index]);
+                        output.Add(filteredOptions[index]);
                     }
                     return output.ToArray();
                 }
