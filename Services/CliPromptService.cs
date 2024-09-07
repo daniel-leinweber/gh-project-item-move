@@ -6,62 +6,106 @@ internal class CliPromptService
         string? description = null
     )
     {
-        var menuHeight = options.Length + 1;
         var menuStartRow = Console.CursorTop;
 
+        var filteredOptions = new List<string>(options);
+        var isFilterEnabled = false;
+        var filterValue = string.Empty;
         var selectedIndex = 0;
         while (true)
         {
-            menuStartRow = GetMenuStartRow(menuStartRow, menuHeight);
-            description ??= "Use arrows or j/k to move";
+            // Reset cursor to initial position
+            menuStartRow = ResetCursorPosition(menuStartRow, filteredOptions);
 
-            // Reset cursor to initial position and print the menu
-            Console.SetCursorPosition(0, menuStartRow);
-            Console.Write(title);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine($" [{description}]");
-            Console.ResetColor();
+            // Display menu title, description and filter
+            DisplayMenuHeader(
+                title,
+                description ??= "Use arrows or j/k to move, type / to filter",
+                filterValue,
+                menuStartRow
+            );
+
+            // Clear options
+            ClearOptions(options, menuStartRow);
 
             // Display the options and highlight the selected one
-            for (int i = 0; i < options.Count(); i++)
-            {
-                if (i == selectedIndex)
-                {
-                    // Highlight the currently selected option
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"> {options[i]}");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine($"  {options[i]}");
-                }
-            }
+            DisplaySingleSelectFilterOptions(filteredOptions, selectedIndex);
 
             // Capture key press without displaying it in the console
             var key = Console.ReadKey(true);
 
-            // Handle navigation
-            if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.K)
+            // Handle filter mode
+            if (isFilterEnabled == true)
             {
-                selectedIndex--;
-                if (selectedIndex < 0)
+                selectedIndex = 0;
+
+                // Exit filter mode
+                if (key.Key == ConsoleKey.Enter)
                 {
-                    selectedIndex = options.Length - 1;
+                    isFilterEnabled = false;
+                    if (filteredOptions.Count() == 1)
+                    {
+                        return filteredOptions.First();
+                    }
+                }
+                // Cancel filter mode and reset options
+                else if (key.Key == ConsoleKey.Escape)
+                {
+                    isFilterEnabled = false;
+                    filterValue = string.Empty;
+                    filteredOptions = new List<string>(options);
+                }
+                // Handle backspace to remove the last character from the filter
+                else if (key.Key == ConsoleKey.Backspace && filterValue.Length > 0)
+                {
+                    filterValue = filterValue.Substring(0, filterValue.Length - 1);
+                    filteredOptions = options
+                        .Where(x =>
+                            x.Contains(filterValue, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .ToList();
+                }
+                // Add typed character to the filter and update the filtered options
+                else if (key.KeyChar != '\u0000' && char.IsControl(key.KeyChar) == false)
+                {
+                    filterValue += key.KeyChar;
+                    filteredOptions = options
+                        .Where(x =>
+                            x.Contains(filterValue, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .ToList();
                 }
             }
-            else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.J)
+            else
             {
-                selectedIndex++;
-                if (selectedIndex >= options.Length)
+                // Handle navigation
+                if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.K)
                 {
-                    selectedIndex = 0;
+                    selectedIndex--;
+                    if (selectedIndex < 0)
+                    {
+                        selectedIndex = filteredOptions.Count() - 1;
+                    }
                 }
-            }
-            // Handle selection
-            else if (key.Key == ConsoleKey.Enter || key.Key == ConsoleKey.Spacebar)
-            {
-                return options[selectedIndex];
+                else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.J)
+                {
+                    selectedIndex++;
+                    if (selectedIndex >= filteredOptions.Count())
+                    {
+                        selectedIndex = 0;
+                    }
+                }
+                // Handle selection
+                else if (key.Key == ConsoleKey.Enter || key.Key == ConsoleKey.Spacebar)
+                {
+                    return filteredOptions[selectedIndex];
+                }
+                // Enter filter mode
+                else if (key.KeyChar == '/')
+                {
+                    isFilterEnabled = true;
+                    filterValue = string.Empty;
+                }
             }
         }
     }
@@ -72,91 +116,132 @@ internal class CliPromptService
         string? description = null
     )
     {
-        var menuHeight = options.Length + 1;
         var menuStartRow = Console.CursorTop;
 
+        var filteredOptions = new List<string>(options);
+        var isFilterEnabled = false;
+        var filterValue = string.Empty;
         var selectedIndexes = new List<int>();
         var cursorIndex = 0;
         while (true)
         {
-            menuStartRow = GetMenuStartRow(menuStartRow, menuHeight);
-            description ??= "Use arrows or j/k to move and space to select"; // , type / to filter";
+            // Reset cursor to initial position
+            menuStartRow = ResetCursorPosition(menuStartRow, filteredOptions);
 
-            // Reset cursor to initial position and print the menu
-            Console.SetCursorPosition(0, menuStartRow);
-            Console.Write(title);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine($" [{description}]");
-            Console.ResetColor();
+            // Display menu title, description and filter
+            DisplayMenuHeader(
+                title,
+                description ??= "Use arrows or j/k to move and space to select, type / to filter",
+                filterValue,
+                menuStartRow
+            );
+
+            // Clear options
+            ClearOptions(options, menuStartRow);
 
             // Display the options and highlight the selected one
-            for (int i = 0; i < options.Count(); i++)
-            {
-                // Display indicator of current cursor position
-                if (i == cursorIndex)
-                {
-                    Console.Write("> ");
-                }
-                else
-                {
-                    Console.Write("  ");
-                }
-
-                // Highlight the currently selected option
-                if (selectedIndexes.Contains(i) == true)
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"[x] {options[i]}");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine($"[ ] {options[i]}");
-                }
-            }
+            DisplayMultiSelectFilterOptions(filteredOptions, selectedIndexes, cursorIndex);
 
             // Capture key press without displaying it in the console
             var key = Console.ReadKey(true);
 
-            // Handle navigation
-            if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.K)
+            // Handle filter mode
+            if (isFilterEnabled == true)
             {
-                cursorIndex--;
-                if (cursorIndex < 0)
+                cursorIndex = 0;
+
+                // Exit filter mode
+                if (key.Key == ConsoleKey.Enter)
                 {
-                    cursorIndex = options.Length - 1;
+                    isFilterEnabled = false;
+                    filterValue = string.Empty;
+                    selectedIndexes.Clear();
+                }
+                // Cancel filter mode and reset options
+                else if (key.Key == ConsoleKey.Escape)
+                {
+                    isFilterEnabled = false;
+                    filterValue = string.Empty;
+                    filteredOptions = new List<string>(options);
+                    selectedIndexes.Clear();
+                }
+                // Handle backspace to remove the last character from the filter
+                else if (key.Key == ConsoleKey.Backspace && filterValue.Length > 0)
+                {
+                    filterValue = filterValue.Substring(0, filterValue.Length - 1);
+                    filteredOptions = options
+                        .Where(x =>
+                            x.Contains(filterValue, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .ToList();
+                }
+                // Add typed character to the filter and update the filtered options
+                else if (key.KeyChar != '\u0000' && char.IsControl(key.KeyChar) == false)
+                {
+                    filterValue += key.KeyChar;
+                    filteredOptions = options
+                        .Where(x =>
+                            x.Contains(filterValue, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .ToList();
                 }
             }
-            else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.J)
+            else
             {
-                cursorIndex++;
-                if (cursorIndex >= options.Length)
+                // Handle navigation
+                if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.K)
                 {
-                    cursorIndex = 0;
+                    cursorIndex--;
+                    if (cursorIndex < 0)
+                    {
+                        cursorIndex = options.Length - 1;
+                    }
                 }
-            }
-            // Handle selection
-            else if (key.Key == ConsoleKey.Spacebar)
-            {
-                if (selectedIndexes.Contains(cursorIndex) == true)
+                else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.J)
                 {
-                    selectedIndexes.Remove(cursorIndex);
+                    cursorIndex++;
+                    if (cursorIndex >= options.Length)
+                    {
+                        cursorIndex = 0;
+                    }
                 }
-                else
+                // Handle selection
+                else if (key.Key == ConsoleKey.Spacebar)
                 {
-                    selectedIndexes.Add(cursorIndex);
+                    if (selectedIndexes.Contains(cursorIndex) == true)
+                    {
+                        selectedIndexes.Remove(cursorIndex);
+                    }
+                    else
+                    {
+                        selectedIndexes.Add(cursorIndex);
+                    }
                 }
-            }
-            else if (key.Key == ConsoleKey.Enter)
-            {
-                var output = new List<string>();
-                foreach (var index in selectedIndexes)
+                else if (key.Key == ConsoleKey.Enter)
                 {
-                    output.Add(options[index]);
+                    var output = new List<string>();
+                    foreach (var index in selectedIndexes)
+                    {
+                        output.Add(options[index]);
+                    }
+                    return output.ToArray();
                 }
-                return output.ToArray();
+                // Enter filter mode
+                else if (key.KeyChar == '/')
+                {
+                    isFilterEnabled = true;
+                    filterValue = string.Empty;
+                }
             }
         }
+    }
+
+    private int ResetCursorPosition(int menuStartRow, List<string> filteredOptions)
+    {
+        var menuHeight = filteredOptions.Count() + 1;
+        menuStartRow = GetMenuStartRow(menuStartRow, menuHeight);
+        Console.SetCursorPosition(0, menuStartRow);
+        return menuStartRow;
     }
 
     private int GetMenuStartRow(int menuStartRow, int menuHeight)
@@ -180,5 +265,84 @@ internal class CliPromptService
         }
 
         return menuStartRow;
+    }
+
+    private void DisplayMenuHeader(
+        string title,
+        string description,
+        string filterValue,
+        int menuStartRow
+    )
+    {
+        Console.Write(new string(' ', Console.WindowWidth)); // Clear the line
+        Console.SetCursorPosition(0, menuStartRow);
+        Console.Write(title);
+        if (string.IsNullOrWhiteSpace(filterValue) == false)
+        {
+            Console.Write($" /{filterValue}");
+            description = "Press ESC to reset filter and Enter to accept";
+        }
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine($" [{description}]");
+        Console.ResetColor();
+    }
+
+    private void ClearOptions(string[] options, int menuStartRow)
+    {
+        foreach (var option in options)
+        {
+            Console.WriteLine(new string(' ', Console.WindowWidth));
+        }
+        Console.SetCursorPosition(0, menuStartRow + 1);
+    }
+
+    private void DisplaySingleSelectFilterOptions(List<string> options, int selectedIndex)
+    {
+        for (int i = 0; i < options.Count(); i++)
+        {
+            if (i == selectedIndex)
+            {
+                // Highlight the currently selected option
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"> {options[i]}".PadRight(Console.WindowWidth - 1));
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"  {options[i]}".PadRight(Console.WindowWidth - 1));
+            }
+        }
+    }
+
+    private void DisplayMultiSelectFilterOptions(
+        List<string> options,
+        List<int> selectedIndexes,
+        int cursorIndex
+    )
+    {
+        for (int i = 0; i < options.Count(); i++)
+        {
+            // Display indicator of current cursor position
+            if (i == cursorIndex)
+            {
+                Console.Write("> ");
+            }
+            else
+            {
+                Console.Write("  ");
+            }
+
+            // Highlight the currently selected option
+            if (selectedIndexes.Contains(i) == true)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"[x] {options[i]}");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"[ ] {options[i]}");
+            }
+        }
     }
 }
