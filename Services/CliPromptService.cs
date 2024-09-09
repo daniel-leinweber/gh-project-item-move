@@ -1,3 +1,5 @@
+using Extension.Models;
+
 internal class CliPromptService
 {
     internal string PrintSingleSelectOptions(
@@ -154,6 +156,42 @@ internal class CliPromptService
                 }
             }
         }
+    }
+
+    internal void PrintSelection(
+        string owner,
+        string project,
+        List<ProjectItem> projectItems,
+        string targetColumn
+    )
+    {
+        var issues = string.Join(
+            " | ",
+            projectItems.Select(x => $"{x.Title} (#{x.Content.Number})")
+        );
+
+        Console.Clear();
+        PrintSelection("Owner", owner);
+        PrintSelection("Project", project);
+        PrintSelection(projectItems.Count > 1 ? "Issues" : "Issue", issues);
+        PrintSelection("Column", targetColumn);
+        Console.WriteLine();
+    }
+
+    private static void PrintSelection(string title, string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content) == true)
+        {
+            return;
+        }
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write("?");
+        Console.ResetColor();
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write($" {title}:");
+        Console.ResetColor();
+        Console.WriteLine($" {content}");
     }
 
     private int CalculateTotalPages(int optionsCount, int pageSize) =>

@@ -16,27 +16,27 @@ class Program
 
                 // Get owner
                 var owner = GetOwner(options.Owner, gh, cli);
-                Console.WriteLine();
                 if (owner is null)
                 {
+                    Console.WriteLine();
                     Console.WriteLine("Error: No owner! Please provide a valid owner.");
                     Environment.Exit(1);
                 }
 
                 // Get project data
                 var project = GetProject(options.ProjectName, owner, gh, cli);
-                Console.WriteLine();
                 if (project is null)
                 {
+                    Console.WriteLine();
                     Console.WriteLine("Error: No Project! Please provide a valid project name.");
                     Environment.Exit(1);
                 }
 
                 // Get issue to move
                 var issues = GetIssues(options.IssueId, project, gh, cli);
-                Console.WriteLine();
                 if (issues is null || issues.Any() == false)
                 {
+                    Console.WriteLine();
                     Console.WriteLine("Error: No issue! Please provide a valid issue number.");
                     Environment.Exit(1);
                 }
@@ -45,6 +45,7 @@ class Program
                 var projectStatusField = gh.GetProjectField(project.Number, "Status", owner);
                 if (projectStatusField is null)
                 {
+                    Console.WriteLine();
                     Console.WriteLine("Error: Could not find 'Status' field of project!");
                     Environment.Exit(1);
                 }
@@ -58,14 +59,16 @@ class Program
                     gh,
                     cli
                 );
-                Console.WriteLine();
                 if (column is null)
                 {
+                    Console.WriteLine();
                     Console.WriteLine(
                         "Error: No column! Please provide a valid target column name."
                     );
                     Environment.Exit(1);
                 }
+
+                cli.PrintSelection(owner, project.Title, issues, column.Name);
 
                 // Move items in project board
                 var errors = new List<string>();
@@ -95,7 +98,13 @@ class Program
                 }
                 else
                 {
-                    Console.WriteLine("Issue(s) moved successfully!");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine(
+                        issues.Count > 1
+                            ? "Issues moved successfully!"
+                            : "Ussue moved successfully!"
+                    );
+                    Console.ResetColor();
                     Environment.Exit(0);
                 }
             })
