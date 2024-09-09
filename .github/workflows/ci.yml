@@ -19,22 +19,22 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: 🔄 restore
-        run: dotnet restore Extension.csproj -m:1
+        run: dotnet restore -m:1
 
       - name: 🙏 build
-        run: dotnet build Extension.csproj --no-restore -m:1
+        run: dotnet build --no-restore -m:1
 
 #      - name: 🧪 test
 #        run: dotnet test --no-build --no-restore
 
       - name: 📦 publish (compile & package) artifacts
         run: |
-          dotnet publish Extension.csproj -c Release -r win-x64 --self-contained -o bin/win-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish Extension.csproj -c Release -r osx-x64 --self-contained -o bin/osx-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish Extension.csproj -c Release -r osx-arm64 --self-contained -o bin/osx-arm64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-          dotnet publish Extension.csproj -c Release -r linux-x64 --self-contained -o bin/linux-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish src/Extension/Extension.csproj -c Release -r win-x64 --self-contained -o bin/win-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish src/Extension/Extension.csproj -c Release -r osx-x64 --self-contained -o bin/osx-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish src/Extension/Extension.csproj -c Release -r osx-arm64 --self-contained -o bin/osx-arm64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish src/Extension/Extension.csproj -c Release -r linux-x64 --self-contained -o bin/linux-x64 --no-restore -p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
-      - name: ➡️ stage artifacts
+      - name: ➡️  stage artifacts
         run: |
           mkdir -p ${{ runner.temp }}/staging
           cp bin/win-x64/gh-project-item-move.exe ${{ runner.temp }}/staging/project-item-move-windows-amd64.exe

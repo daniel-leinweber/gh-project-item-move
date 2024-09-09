@@ -1,4 +1,5 @@
 using CommandLine;
+using Extension.Helper;
 using Extension.Models;
 using Extension.Services;
 
@@ -11,15 +12,16 @@ class Program
             .Default.ParseArguments<CommandLineOptions>(args)
             .WithParsed(options =>
             {
+                var console = new AnsiConsole();
                 var gh = new GitHubService();
-                var cli = new CliPromptService();
+                var cli = new CliPromptService(console);
 
                 // Get owner
                 var owner = GetOwner(options.Owner, gh, cli);
                 if (owner is null)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error: No owner! Please provide a valid owner.");
+                    console.WriteLine();
+                    console.WriteLine("Error: No owner! Please provide a valid owner.");
                     Environment.Exit(1);
                 }
 
@@ -27,8 +29,8 @@ class Program
                 var project = GetProject(options.ProjectName, owner, gh, cli);
                 if (project is null)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error: No Project! Please provide a valid project name.");
+                    console.WriteLine();
+                    console.WriteLine("Error: No Project! Please provide a valid project name.");
                     Environment.Exit(1);
                 }
 
@@ -36,8 +38,8 @@ class Program
                 var issues = GetIssues(options.IssueId, project, gh, cli);
                 if (issues is null || issues.Any() == false)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error: No issue! Please provide a valid issue number.");
+                    console.WriteLine();
+                    console.WriteLine("Error: No issue! Please provide a valid issue number.");
                     Environment.Exit(1);
                 }
 
@@ -45,8 +47,8 @@ class Program
                 var projectStatusField = gh.GetProjectField(project.Number, "Status", owner);
                 if (projectStatusField is null)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error: Could not find 'Status' field of project!");
+                    console.WriteLine();
+                    console.WriteLine("Error: Could not find 'Status' field of project!");
                     Environment.Exit(1);
                 }
 
@@ -61,8 +63,8 @@ class Program
                 );
                 if (column is null)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine(
+                    console.WriteLine();
+                    console.WriteLine(
                         "Error: No column! Please provide a valid target column name."
                     );
                     Environment.Exit(1);
@@ -92,19 +94,18 @@ class Program
                 {
                     foreach (var error in errors)
                     {
-                        Console.WriteLine(error);
+                        console.WriteLine(error);
                     }
                     Environment.Exit(1);
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(
+                    console.WriteLine(
                         issues.Count > 1
                             ? "Issues moved successfully!"
-                            : "Ussue moved successfully!"
+                            : "Issue moved successfully!",
+                        color: ConsoleColor.Blue
                     );
-                    Console.ResetColor();
                     Environment.Exit(0);
                 }
             })

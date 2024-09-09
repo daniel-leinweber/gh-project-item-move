@@ -1,7 +1,17 @@
+using Extension.Interfaces;
 using Extension.Models;
+
+namespace Extension.Services;
 
 internal class CliPromptService
 {
+    private readonly IConsole _console;
+
+    public CliPromptService(IConsole console)
+    {
+        _console = console;
+    }
+
     internal string PrintSingleSelectOptions(
         string title,
         string[] options,
@@ -24,7 +34,6 @@ internal class CliPromptService
                 filteredOptions.Count
             );
 
-            ClearAndResetConsole();
             DisplayMenuHeader(
                 title,
                 description ?? "Use arrows or j/k to move, type / to filter",
@@ -34,7 +43,7 @@ internal class CliPromptService
             DisplaySingleSelectFilterOptions(filteredOptions, selectedIndex, startIndex, endIndex);
             DisplayFooter(currentPage, totalPages);
 
-            var key = Console.ReadKey(true);
+            var key = _console.ReadKey(true);
 
             if (isFilterEnabled)
             {
@@ -97,7 +106,6 @@ internal class CliPromptService
                 filteredOptions.Count
             );
 
-            ClearAndResetConsole();
             DisplayMenuHeader(
                 title,
                 description ?? "Use arrows or j/k to move and space to select, type / to filter",
@@ -113,7 +121,7 @@ internal class CliPromptService
             );
             DisplayFooter(currentPage, totalPages);
 
-            var key = Console.ReadKey(true);
+            var key = _console.ReadKey(true);
 
             if (isFilterEnabled)
             {
@@ -178,20 +186,16 @@ internal class CliPromptService
         Console.WriteLine();
     }
 
-    private static void PrintSelection(string title, string? content)
+    private void PrintSelection(string title, string? content)
     {
         if (string.IsNullOrWhiteSpace(content) == true)
         {
             return;
         }
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.Write("?");
-        Console.ResetColor();
-        Console.ForegroundColor = ConsoleColor.White;
-        Console.Write($" {title}:");
-        Console.ResetColor();
-        Console.WriteLine($" {content}");
+        _console.Write("?", color: ConsoleColor.Green);
+        _console.Write($" {title}:", color: ConsoleColor.White);
+        _console.WriteLine($" {content}");
     }
 
     private int CalculateTotalPages(int optionsCount, int pageSize) =>
@@ -206,12 +210,6 @@ internal class CliPromptService
         var startIndex = currentPage * pageSize;
         var endIndex = Math.Min(startIndex + pageSize, optionsCount);
         return (startIndex, endIndex);
-    }
-
-    private void ClearAndResetConsole()
-    {
-        Console.Clear();
-        Console.SetCursorPosition(0, 0);
     }
 
     private void ToggleSelection(List<int> selectedIndexes, int index)
@@ -325,17 +323,11 @@ internal class CliPromptService
         int totalPages
     )
     {
-        Console.SetCursorPosition(0, 0);
-        Console.WriteLine(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, 0);
-
-        Console.ForegroundColor = ConsoleColor.White;
-        Console.Write($"{title}");
-        Console.ResetColor();
+        _console.Write(title, clearScreen: true, color: ConsoleColor.White);
 
         if (string.IsNullOrWhiteSpace(filterValue) == false)
         {
-            Console.Write($" /{filterValue}");
+            _console.Write($" /{filterValue}");
             description = "Press ESC to reset filter and Enter to accept";
         }
 
@@ -344,10 +336,7 @@ internal class CliPromptService
             description += ", PageUp/Ctrl+U previous page, PageDown/Ctrl+D next page";
         }
 
-        Console.ForegroundColor = ConsoleColor.Blue;
-        Console.Write($" [{description}]");
-        Console.WriteLine();
-        Console.ResetColor();
+        _console.WriteLine($" [{description}]", color: ConsoleColor.Blue);
     }
 
     private void DisplayFooter(int currentPage, int totalPages)
@@ -355,9 +344,7 @@ internal class CliPromptService
         if (totalPages > 1)
         {
             Console.SetCursorPosition(0, Console.WindowHeight - 1);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write($"Page {currentPage + 1} of {totalPages}");
-            Console.ResetColor();
+            _console.Write($"Page {currentPage + 1} of {totalPages}", color: ConsoleColor.Blue);
         }
     }
 
@@ -372,13 +359,14 @@ internal class CliPromptService
         {
             if (i == selectedIndex)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"> {options[i]}".PadRight(Console.WindowWidth - 1));
-                Console.ResetColor();
+                _console.WriteLine(
+                    $"> {options[i]}".PadRight(Console.WindowWidth - 1),
+                    color: ConsoleColor.Green
+                );
             }
             else
             {
-                Console.WriteLine($"  {options[i]}".PadRight(Console.WindowWidth - 1));
+                _console.WriteLine($"  {options[i]}".PadRight(Console.WindowWidth - 1));
             }
         }
     }
@@ -395,22 +383,20 @@ internal class CliPromptService
         {
             if (i == cursorIndex)
             {
-                Console.Write("> ");
+                _console.Write("> ");
             }
             else
             {
-                Console.Write("  ");
+                _console.Write("  ");
             }
 
             if (selectedIndexes.Contains(i))
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"[x] {options[i]}");
-                Console.ResetColor();
+                _console.WriteLine($"[x] {options[i]}", color: ConsoleColor.Green);
             }
             else
             {
-                Console.WriteLine($"[ ] {options[i]}");
+                _console.WriteLine($"[ ] {options[i]}");
             }
         }
     }
