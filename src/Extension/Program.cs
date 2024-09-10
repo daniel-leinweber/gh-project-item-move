@@ -14,7 +14,7 @@ class Program
             {
                 var console = new AnsiConsole();
                 var gh = new GitHubService();
-                var cli = new CliPromptService(console);
+                var cli = new CliPromptService(console, new ConsoleInputHandler());
 
                 // Get owner
                 var owner = GetOwner(options.Owner, gh, cli);
