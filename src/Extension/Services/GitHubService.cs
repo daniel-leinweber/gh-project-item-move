@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using System.Text;
 using Extension.Exceptions;
+using Extension.Interfaces;
 using Extension.Models;
 using Newtonsoft.Json;
 
 namespace Extension.Services;
 
-internal class GitHubService
+internal class GitHubService : IGitHubService
 {
     public string? CurrentUser { get; private set; }
 
@@ -93,7 +94,7 @@ internal class GitHubService
         return CurrentUser;
     }
 
-    internal IEnumerable<string> GetOwners()
+    public IEnumerable<string> GetOwners()
     {
         var output = new List<string>();
 
@@ -144,7 +145,7 @@ internal class GitHubService
         return output;
     }
 
-    internal List<Project> GetProjects(string owner)
+    public List<Project> GetProjects(string owner)
     {
         var output = new List<Project>();
 
@@ -177,7 +178,7 @@ internal class GitHubService
         return output;
     }
 
-    internal List<ProjectItem> GetIssues(Project project, string owner)
+    public List<ProjectItem> GetIssues(Project project, string owner)
     {
         var output = new List<ProjectItem>();
 
@@ -200,7 +201,7 @@ internal class GitHubService
         return output ?? new();
     }
 
-    internal ProjectField? GetProjectField(int projectNumber, string fieldName, string owner)
+    public ProjectField? GetProjectField(int projectNumber, string fieldName, string owner)
     {
         ProjectField? output = null;
 
@@ -226,7 +227,7 @@ internal class GitHubService
         return output;
     }
 
-    internal bool MoveIssue(string issueId, string projectId, string fieldId, string optionId)
+    public bool MoveIssue(string issueId, string projectId, string fieldId, string optionId)
     {
         var output = true;
 

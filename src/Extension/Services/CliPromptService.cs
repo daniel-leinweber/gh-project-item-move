@@ -3,7 +3,7 @@ using Extension.Interfaces;
 
 namespace Extension.Services;
 
-internal class CliPromptService
+public class CliPromptService : ICliPromptService
 {
     private readonly IConsole _console;
     private readonly IInputHandler _inputHandler;
@@ -16,11 +16,7 @@ internal class CliPromptService
         _renderer = new PromptRenderer(_console);
     }
 
-    internal string PrintSingleSelectMenu(
-        string title,
-        string[] options,
-        string? description = null
-    )
+    public string PrintSingleSelectMenu(string title, string[] options, string? description = null)
     {
         var state = new PromptState(options, Console.WindowHeight - 3);
 
@@ -89,11 +85,7 @@ internal class CliPromptService
         }
     }
 
-    internal string[] PrintMultiSelectMenu(
-        string title,
-        string[] options,
-        string? description = null
-    )
+    public string[] PrintMultiSelectMenu(string title, string[] options, string? description = null)
     {
         var state = new PromptState(options, Console.WindowHeight - 3);
 

@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Extension.Models;
 
-internal class Project
+public class Project
 {
     public required string Id { get; set; }
     public int Number { get; set; }
