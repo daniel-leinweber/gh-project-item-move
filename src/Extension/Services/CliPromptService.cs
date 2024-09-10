@@ -1,6 +1,5 @@
 using Extension.Helper;
 using Extension.Interfaces;
-using Extension.Models;
 
 namespace Extension.Services;
 
@@ -8,14 +7,16 @@ internal class CliPromptService
 {
     private readonly IConsole _console;
     private readonly IInputHandler _inputHandler;
+    private readonly PromptRenderer _renderer;
 
     public CliPromptService(IConsole console, IInputHandler inputHandler)
     {
         _console = console;
         _inputHandler = inputHandler;
+        _renderer = new PromptRenderer(_console);
     }
 
-    internal string PrintSingleSelectOptions(
+    internal string PrintSingleSelectMenu(
         string title,
         string[] options,
         string? description = null
@@ -31,21 +32,21 @@ internal class CliPromptService
                 state.FilteredOptions.Count
             );
 
-            DisplayMenuHeader(
+            _renderer.DisplayMenuHeader(
                 title,
                 description ?? "Use arrows or j/k to move, type / to filter",
                 state.FilterValue,
                 state.TotalPages
             );
 
-            DisplaySingleSelectFilterOptions(
+            _renderer.DisplaySingleSelectOptions(
                 state.FilteredOptions,
                 state.SelectedIndex,
                 startIndex,
                 endIndex
             );
 
-            DisplayFooter(state.CurrentPage, state.TotalPages);
+            _renderer.DisplayFooter(state.CurrentPage, state.TotalPages);
 
             var key = _console.ReadKey(true);
 
@@ -88,7 +89,7 @@ internal class CliPromptService
         }
     }
 
-    internal string[] PrintMultiSelectOptions(
+    internal string[] PrintMultiSelectMenu(
         string title,
         string[] options,
         string? description = null
@@ -104,14 +105,14 @@ internal class CliPromptService
                 state.FilteredOptions.Count
             );
 
-            DisplayMenuHeader(
+            _renderer.DisplayMenuHeader(
                 title,
                 description ?? "Use arrows or j/k to move and space to select, type / to filter",
                 state.FilterValue,
                 state.TotalPages
             );
 
-            DisplayMultiSelectFilterOptions(
+            _renderer.DisplayMultiSelectOptions(
                 state.FilteredOptions,
                 state.SelectedIndexes,
                 state.CursorIndex,
@@ -119,7 +120,7 @@ internal class CliPromptService
                 endIndex
             );
 
-            DisplayFooter(state.CurrentPage, state.TotalPages);
+            _renderer.DisplayFooter(state.CurrentPage, state.TotalPages);
 
             var key = _console.ReadKey(true);
 
@@ -169,38 +170,6 @@ internal class CliPromptService
         }
     }
 
-    internal void PrintSelection(
-        string owner,
-        string project,
-        List<ProjectItem> projectItems,
-        string targetColumn
-    )
-    {
-        var issues = string.Join(
-            " | ",
-            projectItems.Select(x => $"{x.Title} (#{x.Content.Number})")
-        );
-
-        Console.Clear();
-        PrintSelection("Owner", owner);
-        PrintSelection("Project", project);
-        PrintSelection(projectItems.Count > 1 ? "Issues" : "Issue", issues);
-        PrintSelection("Column", targetColumn);
-        Console.WriteLine();
-    }
-
-    private void PrintSelection(string title, string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content) == true)
-        {
-            return;
-        }
-
-        _console.Write("?", color: ConsoleColor.Green);
-        _console.Write($" {title}:", color: ConsoleColor.White);
-        _console.WriteLine($" {content}");
-    }
-
     private (int startIndex, int endIndex) GetPageBounds(
         int currentPage,
         int pageSize,
@@ -211,90 +180,5 @@ internal class CliPromptService
         var endIndex = Math.Min(startIndex + pageSize, optionsCount);
 
         return (startIndex, endIndex);
-    }
-
-    private void DisplayMenuHeader(
-        string title,
-        string description,
-        string filterValue,
-        int totalPages
-    )
-    {
-        _console.Write(title, clearScreen: true, color: ConsoleColor.White);
-
-        if (string.IsNullOrWhiteSpace(filterValue) == false)
-        {
-            _console.Write($" /{filterValue}");
-            description = "Press ESC to reset filter and Enter to accept";
-        }
-
-        if (totalPages > 1 && string.IsNullOrWhiteSpace(filterValue) == true)
-        {
-            description += ", PageUp/Ctrl+U previous page, PageDown/Ctrl+D next page";
-        }
-
-        _console.WriteLine($" [{description}]", color: ConsoleColor.Blue);
-    }
-
-    private void DisplayFooter(int currentPage, int totalPages)
-    {
-        if (totalPages > 1)
-        {
-            Console.SetCursorPosition(0, Console.WindowHeight - 1);
-            _console.Write($"Page {currentPage + 1} of {totalPages}", color: ConsoleColor.Blue);
-        }
-    }
-
-    private void DisplaySingleSelectFilterOptions(
-        List<string> options,
-        int selectedIndex,
-        int startIndex,
-        int endIndex
-    )
-    {
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            if (i == selectedIndex)
-            {
-                _console.WriteLine(
-                    $"> {options[i]}".PadRight(Console.WindowWidth - 1),
-                    color: ConsoleColor.Green
-                );
-            }
-            else
-            {
-                _console.WriteLine($"  {options[i]}".PadRight(Console.WindowWidth - 1));
-            }
-        }
-    }
-
-    private void DisplayMultiSelectFilterOptions(
-        List<string> options,
-        List<int> selectedIndexes,
-        int cursorIndex,
-        int startIndex,
-        int endIndex
-    )
-    {
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            if (i == cursorIndex)
-            {
-                _console.Write("> ");
-            }
-            else
-            {
-                _console.Write("  ");
-            }
-
-            if (selectedIndexes.Contains(i))
-            {
-                _console.WriteLine($"[x] {options[i]}", color: ConsoleColor.Green);
-            }
-            else
-            {
-                _console.WriteLine($"[ ] {options[i]}");
-            }
-        }
     }
 }

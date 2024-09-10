@@ -1,5 +1,6 @@
 using CommandLine;
 using Extension.Helper;
+using Extension.Interfaces;
 using Extension.Models;
 using Extension.Services;
 
@@ -12,7 +13,7 @@ class Program
             .Default.ParseArguments<CommandLineOptions>(args)
             .WithParsed(options =>
             {
-                var console = new AnsiConsole();
+                IConsole console = new AnsiConsole();
                 var gh = new GitHubService();
                 var cli = new CliPromptService(console, new ConsoleInputHandler());
 
@@ -70,7 +71,7 @@ class Program
                     Environment.Exit(1);
                 }
 
-                cli.PrintSelection(owner, project.Title, issues, column.Name);
+                PrintSelection(owner, project.Title, issues, column.Name, console);
 
                 // Move items in project board
                 var errors = new List<string>();
@@ -124,7 +125,7 @@ class Program
 
         if (columnName is null)
         {
-            columnName = cli.PrintSingleSelectOptions(
+            columnName = cli.PrintSingleSelectMenu(
                 "Which column would you like to move the issue(s) to?",
                 options.Select(x => x.Name).ToArray()
             );
@@ -146,7 +147,7 @@ class Program
             var owners = gh.GetOwners();
             if (owners.Count() > 1)
             {
-                output = cli.PrintSingleSelectOptions(
+                output = cli.PrintSingleSelectMenu(
                     "Which owner would you like to use?",
                     owners.ToArray()
                 );
@@ -173,7 +174,7 @@ class Program
 
         if (projectName is null)
         {
-            projectName = cli.PrintSingleSelectOptions(
+            projectName = cli.PrintSingleSelectMenu(
                 "Which project would you like to use?",
                 projects.OrderBy(x => x.Title).Select(x => x.Title).ToArray()
             );
@@ -199,7 +200,7 @@ class Program
 
         if (issueId is null)
         {
-            var selectedIssues = cli.PrintMultiSelectOptions(
+            var selectedIssues = cli.PrintMultiSelectMenu(
                     "Which issue(s) would you like to update?",
                     issues
                         .OrderBy(x => x.Content.Number)
@@ -218,5 +219,38 @@ class Program
         }
 
         return output;
+    }
+
+    private static void PrintSelection(
+        string owner,
+        string project,
+        List<ProjectItem> projectItems,
+        string targetColumn,
+        IConsole console
+    )
+    {
+        var issues = string.Join(
+            " | ",
+            projectItems.Select(x => $"{x.Title} (#{x.Content.Number})")
+        );
+
+        Console.Clear();
+        PrintSelection("Owner", owner, console);
+        PrintSelection("Project", project, console);
+        PrintSelection(projectItems.Count > 1 ? "Issues" : "Issue", issues, console);
+        PrintSelection("Column", targetColumn, console);
+        Console.WriteLine();
+    }
+
+    private static void PrintSelection(string title, string? content, IConsole console)
+    {
+        if (string.IsNullOrWhiteSpace(content) == true)
+        {
+            return;
+        }
+
+        console.Write("?", color: ConsoleColor.Green);
+        console.Write($" {title}:", color: ConsoleColor.White);
+        console.WriteLine($" {content}");
     }
 }
