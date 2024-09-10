@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using Extension.Exceptions;
 using Extension.Models;
 using Newtonsoft.Json;
 
@@ -35,9 +36,9 @@ internal class GitHubService
             standardError = process.StandardError.ReadToEnd();
             process.WaitForExit();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            throw new GitHubCliException(ex.Message);
         }
 
         if (
@@ -65,7 +66,7 @@ internal class GitHubService
                 message.AppendLine(standardOutput.ToString());
             }
 
-            throw new Exception(
+            throw new GitHubCliException(
                 $"{Format(arguments)} finished with exit code = {process.ExitCode}: {message}"
             );
         }
@@ -86,10 +87,7 @@ internal class GitHubService
         }
         catch (Exception)
         {
-            Console.WriteLine(
-                "Could not determine current user, please make sure to authenticate with the gh CLI or provide the '--owner' option!"
-            );
-            Environment.Exit(1);
+            throw new UserNotFoundException();
         }
 
         return CurrentUser;
@@ -113,12 +111,13 @@ internal class GitHubService
                 output.Add(organization);
             }
         }
+        catch (UserNotFoundException)
+        {
+            throw;
+        }
         catch (Exception)
         {
-            Console.WriteLine(
-                "Could not determine possible owners, please make sure to authenticate with the gh CLI or provide the '--owner' option!"
-            );
-            Environment.Exit(1);
+            throw new OwnersNotFoundException();
         }
 
         return output;
@@ -145,14 +144,12 @@ internal class GitHubService
         return output;
     }
 
-    internal List<Project> GetProjects(string? owner = null)
+    internal List<Project> GetProjects(string owner)
     {
         var output = new List<Project>();
 
         try
         {
-            owner ??= GetCurrentUser();
-
             var shellOutput = RunShellCommand(
                 $$"""
                 project list --owner {{owner}} --limit 1000 --format json
@@ -174,9 +171,7 @@ internal class GitHubService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Could not find projects for owner \"{owner}\".");
-            Console.WriteLine(ex.Message);
-            Environment.Exit(1);
+            throw new ProjectsNotFoundException(owner, ex.Message);
         }
 
         return output;
@@ -199,28 +194,18 @@ internal class GitHubService
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"Could not find issues for project \"{project.Title}\" of owner \"{owner}\""
-            );
-            Console.WriteLine(ex.Message);
-            Environment.Exit(1);
+            throw new IssuesNotFoundException(project.Title, owner, ex.Message);
         }
 
         return output ?? new();
     }
 
-    internal ProjectField? GetProjectField(
-        int projectNumber,
-        string fieldName,
-        string? owner = null
-    )
+    internal ProjectField? GetProjectField(int projectNumber, string fieldName, string owner)
     {
         ProjectField? output = null;
 
         try
         {
-            owner ??= GetCurrentUser();
-
             var shellOutput = RunShellCommand(
                 $$"""
                 project field-list {{projectNumber}} --owner {{owner}} --format json --jq .[]
@@ -235,9 +220,7 @@ internal class GitHubService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Could not find project field with name \"{fieldName}\"");
-            Console.WriteLine(ex.Message);
-            Environment.Exit(1);
+            throw new ProjectFieldNotFoundException(fieldName, ex.Message);
         }
 
         return output;
@@ -255,9 +238,8 @@ internal class GitHubService
                 """
             );
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine(ex.Message);
             output = false;
         }
 
