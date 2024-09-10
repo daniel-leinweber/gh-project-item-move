@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <AssemblyName>gh-project-item-move</AssemblyName>
-    <Version>1.0.5</Version>
-    <AssemblyVersion>1.0.5</AssemblyVersion>
-    <FileVersion>1.0.5</FileVersion>
+    <Version>1.0.6</Version>
+    <AssemblyVersion>1.0.6</AssemblyVersion>
+    <FileVersion>1.0.6</FileVersion>
     <Company>Daniel Leinweber</Company>
     <Authors>Daniel Leinweber</Authors>
     <OutputType>Exe</OutputType>
