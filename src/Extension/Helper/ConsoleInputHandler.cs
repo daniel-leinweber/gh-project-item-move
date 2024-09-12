@@ -1,3 +1,5 @@
+using Extension.Interfaces;
+
 namespace Extension.Helper;
 
 public class ConsoleInputHandler : IInputHandler

@@ -1,3 +1,5 @@
+namespace Extension.Interfaces;
+
 public interface IInputHandler
 {
     (bool isFilterEnabled, string filterValue, List<string> filteredOptions) HandleFilterMode(
