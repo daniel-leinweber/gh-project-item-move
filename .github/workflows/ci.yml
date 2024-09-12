@@ -24,8 +24,8 @@ jobs:
       - name: 🙏 build
         run: dotnet build --no-restore -m:1
 
-#      - name: 🧪 test
-#        run: dotnet test --no-build --no-restore
+      - name: 🧪 test
+        run: dotnet test --no-build --no-restore
 
       - name: 📦 publish (compile & package) artifacts
         run: |
