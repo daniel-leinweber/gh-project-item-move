@@ -167,6 +167,7 @@ internal class GitHubService : IGitHubService
                 {
                     project.Owner = owner!;
                 }
+
                 output = projects;
             }
         }

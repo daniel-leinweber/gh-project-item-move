@@ -94,12 +94,7 @@ public class CliPromptServiceTests
         // Simulate selecting items
         _mockInputHandler!
             .Setup(h => h.ToggleSelection(It.IsAny<int>(), It.IsAny<List<int>>()))
-            .Callback<int, List<int>>(
-                (index, list) =>
-                {
-                    list.Add(index);
-                }
-            );
+            .Callback<int, List<int>>((index, list) => list.Add(index));
 
         // Act
         var result = _cliPromptService!.PrintMultiSelectMenu(title, options);

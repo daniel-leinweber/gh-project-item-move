@@ -98,6 +98,7 @@ public class AppService
                 {
                     message.AppendLine(error);
                 }
+
                 return new AppResult(message.ToString(), ExitCode.Error);
             }
             else
@@ -123,13 +124,10 @@ public class AppService
     {
         Option? output = null;
 
-        if (columnName is null)
-        {
-            columnName = _cli.PrintSingleSelectMenu(
-                "Which column would you like to move the issue(s) to?",
-                options.Select(x => x.Name).ToArray()
-            );
-        }
+        columnName ??= _cli.PrintSingleSelectMenu(
+            "Which column would you like to move the issue(s) to?",
+            options.Select(x => x.Name).ToArray()
+        );
 
         output = options.FirstOrDefault(x =>
             x.Name.Equals(columnName, StringComparison.InvariantCultureIgnoreCase)
@@ -145,17 +143,13 @@ public class AppService
         if (input is null)
         {
             var owners = _gh.GetOwners();
-            if (owners.Count() > 1)
-            {
-                output = _cli.PrintSingleSelectMenu(
-                    "Which owner would you like to use?",
-                    owners.ToArray()
-                );
-            }
-            else
-            {
-                output = owners.FirstOrDefault();
-            }
+            output =
+                owners.Count() > 1
+                    ? _cli.PrintSingleSelectMenu(
+                        "Which owner would you like to use?",
+                        owners.ToArray()
+                    )
+                    : owners.FirstOrDefault();
         }
 
         return output;
@@ -167,13 +161,10 @@ public class AppService
 
         var projects = _gh.GetProjects(owner);
 
-        if (projectName is null)
-        {
-            projectName = _cli.PrintSingleSelectMenu(
-                "Which project would you like to use?",
-                projects.OrderBy(x => x.Title).Select(x => x.Title).ToArray()
-            );
-        }
+        projectName ??= _cli.PrintSingleSelectMenu(
+            "Which project would you like to use?",
+            projects.OrderBy(x => x.Title).Select(x => x.Title).ToArray()
+        );
 
         output = projects.FirstOrDefault(x =>
             x.Title.Equals(projectName, StringComparison.InvariantCultureIgnoreCase)
