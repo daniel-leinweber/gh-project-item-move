@@ -4,20 +4,20 @@ using Extension.Models;
 
 namespace Extension.Services;
 
-internal class AppService
+public class AppService
 {
     private readonly IGitHubService _gh;
     private readonly ICliPromptService _cli;
     private readonly IConsole _console;
 
-    internal AppService(IGitHubService gh, ICliPromptService cli, IConsole console)
+    public AppService(IGitHubService gh, ICliPromptService cli, IConsole console)
     {
         _gh = gh;
         _cli = cli;
         _console = console;
     }
 
-    internal AppResult Run(CommandLineOptions options)
+    public AppResult Run(CommandLineOptions options)
     {
         try
         {

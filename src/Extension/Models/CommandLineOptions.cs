@@ -3,7 +3,7 @@ using CommandLine.Text;
 
 namespace Extension.Models;
 
-internal class CommandLineOptions
+public class CommandLineOptions
 {
     [Option(
         shortName: 'o',
