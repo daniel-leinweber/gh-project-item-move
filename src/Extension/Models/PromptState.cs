@@ -1,9 +1,10 @@
-namespace Extension.Helper;
+namespace Extension.Models;
 
 public class PromptState
 {
     public int PageSize { get; set; }
-    public int TotalPages { get; set; }
+    public int TotalPages =>
+        FilteredOptions.Any() ? (int)Math.Ceiling((double)FilteredOptions.Count / PageSize) : 0;
     public int CurrentPage { get; set; }
     public List<string> FilteredOptions { get; set; }
     public bool IsFilterEnabled { get; set; }
@@ -15,7 +16,6 @@ public class PromptState
     public PromptState(string[] options, int pageSize)
     {
         PageSize = pageSize;
-        TotalPages = (int)Math.Ceiling((double)options.Length / pageSize);
         CurrentPage = 0;
         FilteredOptions = new List<string>(options);
         IsFilterEnabled = false;

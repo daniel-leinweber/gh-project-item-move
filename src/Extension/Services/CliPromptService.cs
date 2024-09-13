@@ -1,5 +1,6 @@
 using Extension.Helper;
 using Extension.Interfaces;
+using Extension.Models;
 
 namespace Extension.Services;
 
@@ -80,6 +81,7 @@ public class CliPromptService : ICliPromptService
                 {
                     state.IsFilterEnabled = true;
                     state.FilterValue = string.Empty;
+                    state.CurrentPage = 0;
                 }
             }
         }
@@ -157,6 +159,7 @@ public class CliPromptService : ICliPromptService
                 {
                     state.IsFilterEnabled = true;
                     state.FilterValue = string.Empty;
+                    state.CurrentPage = 0;
                 }
             }
         }
